@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+    db:
+        container_name: postgres
+        image: postgres:latest
+        restart: always
+        environment:
+            - POSTGRES_USER=${POSTGRES_USER}
+            - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+            - POSTGRES_DB=${POSTGRES_DB}
+        ports:
+            - ${POSTGRES_PORT}:5432
+        volumes:
+            - pg_data:/var/lib/postgresql/data
+        networks:
+            - nest_auth
+
+    redis:
+        container_name: redis
+        image: redis:5.0
+        restart: always
+        ports:
+            - ${REDIS_PORT}:6379
+        command: redis-server --requirepass ${REDIS_PASSWORD}
+        volumes:
+            - redis_data:/data
+        networks:
+            - nest_auth
+
+    redis_insight:
+        container_name: redis_insight
+        image: redislabs/redisinsight:latest
+        restart: always
+        ports:
+            - '5540:5540'
+        networks:
+            - nest_auth
+
+volumes:
+    pg_data:
+    redis_data:
+networks:
+    nest_auth:
