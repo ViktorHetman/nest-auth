@@ -1,4 +1,4 @@
-import { ConflictException, Injectable } from '@nestjs/common'
+import { ConflictException, Injectable, Logger } from '@nestjs/common'
 import { instanceToPlain, plainToInstance } from 'class-transformer'
 
 import { UserService } from '@/user/user.service'
@@ -8,6 +8,7 @@ import { ResponseDto } from './dto/response.dto'
 
 @Injectable()
 export class AuthService {
+	private readonly logger = new Logger(AuthService.name)
 	constructor(private readonly userService: UserService) {}
 
 	public async register(dto: RegisterDto) {
@@ -26,7 +27,9 @@ export class AuthService {
 			'CREDENTIALS',
 			false
 		)
-
+		this.logger.log(
+			`User: ${newUser.email}, ${newUser.displayName}, ${newUser.authMethod}, was registered`
+		)
 		return instanceToPlain(plainToInstance(ResponseDto, newUser))
 	}
 
