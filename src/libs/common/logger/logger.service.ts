@@ -1,7 +1,15 @@
-import { ConsoleLogger, LoggerService, LogLevel } from '@nestjs/common'
+import {
+	ConsoleLogger,
+	Global,
+	Injectable,
+	LoggerService,
+	LogLevel
+} from '@nestjs/common'
 import { appendFileSync, existsSync, mkdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 
+@Global()
+@Injectable()
 export class CustomLogger implements LoggerService {
 	private readonly logFile = join(
 		__dirname,

@@ -1,15 +1,31 @@
 import { BadRequestException } from '@nestjs/common'
 import { Test, TestingModule } from '@nestjs/testing'
+import { AuthMethod, User, UserRole } from '@prisma/__generated__'
+import { v4 as uuid } from 'uuid'
 
 import { AuthController } from './auth.controller'
 import { AuthService } from './auth.service'
 import { RegisterDto } from './dto/register.dto'
 
-const newUser: RegisterDto = {
+const dto: RegisterDto = {
 	email: 'newuser@gmail.com',
 	name: 'new user',
 	password: '123456',
 	passwordRepeat: '123456'
+}
+
+const newUser: User = {
+	id: uuid(),
+	isTwoFactorEnabled: false,
+	isVerified: false,
+	password: '123456',
+	role: UserRole.REGULAR,
+	email: 'newuser@gmail.com',
+	displayName: 'new user',
+	avatar: '',
+	authMethod: AuthMethod.CREDENTIALS,
+	createdAt: new Date(),
+	updatedAt: new Date()
 }
 
 describe('Auth Controller', () => {
@@ -38,7 +54,7 @@ describe('Auth Controller', () => {
 	})
 
 	it('should register new user', async () => {
-		const result = await controller.register(newUser)
+		const result = await controller.register(dto)
 		expect(result).toEqual(newUser)
 	})
 

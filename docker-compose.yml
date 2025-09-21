@@ -37,8 +37,24 @@ services:
         networks:
             - nest_auth
 
+    test_db:
+        container_name: postgres_test
+        image: postgres:latest
+        restart: always
+        environment:
+            - POSTGRES_USER=${POSTGRES_USER_TEST}
+            - POSTGRES_PASSWORD=${POSTGRES_PASSWORD_TEST}
+            - POSTGRES_DB=${POSTGRES_DB_TEST}
+        ports:
+            - ${POSTGRES_PORT_TEST}:5432
+        volumes:
+            - pg_data_test:/var/lib/postgresql/data
+        networks:
+            - nest_auth
+
 volumes:
     pg_data:
     redis_data:
+    pg_data_test:
 networks:
     nest_auth:
