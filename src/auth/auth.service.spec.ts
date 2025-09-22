@@ -24,11 +24,10 @@ const registerDto: RegisterDto = {
 	passwordRepeat: '123456'
 }
 
-const newUser = {
+const newUser: Partial<ResponseDto> = {
 	id: uuid(),
 	email: 'newuser@gmail.com',
 	displayName: 'New User',
-	password: 'hashedPassword',
 	avatar: '',
 	authMethod: AuthMethod.CREDENTIALS,
 	isVerified: false,

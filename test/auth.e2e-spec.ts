@@ -7,6 +7,7 @@ import { App } from 'supertest/types'
 import { AppModule } from '@/app.module'
 import { AuthModule } from '@/auth/auth.module'
 import { RegisterDto } from '@/auth/dto/register.dto'
+import { ResponseDto } from '@/auth/dto/response.dto'
 import { PrismaService } from '@/prisma/prisma.service'
 
 describe('Auth (e2e)', () => {
@@ -20,7 +21,7 @@ describe('Auth (e2e)', () => {
 		passwordRepeat: '123456'
 	}
 
-	const newUser = {
+	const newUser: Partial<ResponseDto> = {
 		id: expect.any(String) as string,
 		email: 'newuser@gmail.com',
 		displayName: 'new user',
@@ -29,8 +30,8 @@ describe('Auth (e2e)', () => {
 		isVerified: false,
 		isTwoFactorEnabled: false,
 		authMethod: AuthMethod.CREDENTIALS,
-		createdAt: expect.any(Number) as number,
-		updatedAt: expect.any(Number) as number,
+		createdAt: expect.any(Number) as Date,
+		updatedAt: expect.any(Number) as Date,
 		accounts: []
 	}
 

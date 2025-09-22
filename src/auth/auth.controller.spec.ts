@@ -1,11 +1,12 @@
 import { BadRequestException } from '@nestjs/common'
 import { Test, TestingModule } from '@nestjs/testing'
-import { AuthMethod, User, UserRole } from '@prisma/__generated__'
+import { AuthMethod, UserRole } from '@prisma/__generated__'
 import { v4 as uuid } from 'uuid'
 
 import { AuthController } from './auth.controller'
 import { AuthService } from './auth.service'
 import { RegisterDto } from './dto/register.dto'
+import { ResponseDto } from './dto/response.dto'
 
 const dto: RegisterDto = {
 	email: 'newuser@gmail.com',
@@ -14,11 +15,10 @@ const dto: RegisterDto = {
 	passwordRepeat: '123456'
 }
 
-const newUser: User = {
+const newUser: Partial<ResponseDto> = {
 	id: uuid(),
 	isTwoFactorEnabled: false,
 	isVerified: false,
-	password: '123456',
 	role: UserRole.REGULAR,
 	email: 'newuser@gmail.com',
 	displayName: 'new user',

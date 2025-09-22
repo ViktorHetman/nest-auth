@@ -1,11 +1,24 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common'
+import {
+	Body,
+	Controller,
+	HttpCode,
+	HttpStatus,
+	Post,
+	Req,
+	Res
+} from '@nestjs/common'
 import {
 	ApiConflictResponse,
 	ApiCreatedResponse,
-	ApiOperation
+	ApiNotFoundResponse,
+	ApiOkResponse,
+	ApiOperation,
+	ApiUnauthorizedResponse
 } from '@nestjs/swagger'
+import type { Request, Response } from 'express'
 
 import { AuthService } from './auth.service'
+import { LoginDto } from './dto/login.dto'
 import { RegisterDto } from './dto/register.dto'
 import { ResponseDto } from './dto/response.dto'
 
@@ -21,7 +34,34 @@ export class AuthController {
 	@ApiConflictResponse({ description: 'User with such email already exists' })
 	@Post('register')
 	@HttpCode(HttpStatus.CREATED)
-	public async register(@Body() dto: RegisterDto) {
-		return this.authService.register(dto)
+	public async register(@Req() req: Request, @Body() dto: RegisterDto) {
+		return this.authService.register(req, dto)
+	}
+
+	@ApiOperation({
+		summary: 'User login',
+		description: 'Sign in an existing account'
+	})
+	@ApiOkResponse({ description: 'OK', type: ResponseDto })
+	@ApiNotFoundResponse({ description: 'User Not Found' })
+	@ApiUnauthorizedResponse({ description: 'Invalid Password' })
+	@Post('login')
+	@HttpCode(HttpStatus.OK)
+	public async login(@Req() req: Request, @Body() dto: LoginDto) {
+		return this.authService.login(req, dto)
+	}
+
+	@ApiOperation({
+		summary: 'User logout',
+		description: 'Log out from existing account'
+	})
+	@ApiOkResponse({ description: 'OK' })
+	@Post('logout')
+	@HttpCode(HttpStatus.OK)
+	public async logout(
+		@Req() req: Request,
+		@Res({ passthrough: true }) res: Response
+	) {
+		return this.authService.logout(req, res)
 	}
 }

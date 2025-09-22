@@ -1,5 +1,5 @@
 import { ConfigService } from '@nestjs/config'
-import { RedisStore } from 'connect-redis'
+import RedisStore from 'connect-redis'
 import session from 'express-session'
 import IORedis from 'ioredis'
 
@@ -27,6 +27,6 @@ export function getSessionConfig(
 		store: new RedisStore({
 			client: redis,
 			prefix: config.getOrThrow<string>('SESSION_PREFIX')
-		})
+		}) as session.Store
 	}
 }
