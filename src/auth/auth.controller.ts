@@ -18,6 +18,7 @@ import {
 import type { Request, Response } from 'express'
 
 import { AuthService } from './auth.service'
+import { Authorization } from './decorators/auth.decorator'
 import { LoginDto } from './dto/login.dto'
 import { RegisterDto } from './dto/register.dto'
 import { ResponseDto } from './dto/response.dto'
@@ -56,6 +57,7 @@ export class AuthController {
 		description: 'Log out from existing account'
 	})
 	@ApiOkResponse({ description: 'OK' })
+	@Authorization()
 	@Post('logout')
 	@HttpCode(HttpStatus.OK)
 	public async logout(

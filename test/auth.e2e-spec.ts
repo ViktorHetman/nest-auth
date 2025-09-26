@@ -171,11 +171,10 @@ describe('Auth (e2e)', () => {
 				.set('Cookie', cookie)
 				.expect(200)
 
-			// SERVICE BUG: USER CAN LOGOUT SEVERAL TIMES
-			// await request(app.getHttpServer())
-			// 	.post('/auth/logout')
-			// 	.set('Cookie', cookie)
-			// 	.expect(401)
+			await request(app.getHttpServer())
+				.post('/auth/logout')
+				.set('Cookie', cookie)
+				.expect(401)
 		})
 	})
 })
