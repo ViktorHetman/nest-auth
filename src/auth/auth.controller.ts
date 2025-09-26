@@ -15,6 +15,7 @@ import {
 	ApiOperation,
 	ApiUnauthorizedResponse
 } from '@nestjs/swagger'
+import { Recaptcha } from '@nestlab/google-recaptcha'
 import type { Request, Response } from 'express'
 
 import { AuthService } from './auth.service'
@@ -33,6 +34,7 @@ export class AuthController {
 	})
 	@ApiCreatedResponse({ description: 'Created', type: ResponseDto })
 	@ApiConflictResponse({ description: 'User with such email already exists' })
+	@Recaptcha()
 	@Post('register')
 	@HttpCode(HttpStatus.CREATED)
 	public async register(@Req() req: Request, @Body() dto: RegisterDto) {
@@ -46,6 +48,7 @@ export class AuthController {
 	@ApiOkResponse({ description: 'OK', type: ResponseDto })
 	@ApiNotFoundResponse({ description: 'User Not Found' })
 	@ApiUnauthorizedResponse({ description: 'Invalid Password' })
+	@Recaptcha()
 	@Post('login')
 	@HttpCode(HttpStatus.OK)
 	public async login(@Req() req: Request, @Body() dto: LoginDto) {
