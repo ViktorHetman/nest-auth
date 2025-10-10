@@ -7,41 +7,22 @@
 import { ConflictException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { Test, TestingModule } from '@nestjs/testing'
-import { AuthMethod, UserRole } from '@prisma/__generated__'
 import { instanceToPlain, plainToInstance } from 'class-transformer'
-import type { Request, Response } from 'express'
-import { v4 as uuid } from 'uuid'
 
 import { UserService } from '@/user/user.service'
 
+import {
+	loginDto,
+	user as newUser,
+	registerDto
+} from '../libs/common/utils/dummy-data.util'
+
 import { AuthService } from './auth.service'
-import { LoginDto } from './dto/login.dto'
-import { RegisterDto } from './dto/register.dto'
 import { ResponseDto } from './dto/response.dto'
 
 const mockUserService = {
 	findByEmail: jest.fn(),
 	create: jest.fn()
-}
-
-const registerDto: RegisterDto = {
-	email: 'newuser@gmail.com',
-	name: 'New User',
-	password: '123456',
-	passwordRepeat: '123456'
-}
-
-const newUser: Partial<ResponseDto> = {
-	id: uuid(),
-	email: 'newuser@gmail.com',
-	displayName: 'New User',
-	avatar: '',
-	authMethod: AuthMethod.CREDENTIALS,
-	isVerified: false,
-	role: UserRole.REGULAR,
-	createdAt: new Date(),
-	updatedAt: new Date(),
-	accounts: []
 }
 
 describe('AuthService', () => {
@@ -125,27 +106,19 @@ describe('AuthService', () => {
 			mockUserService.findByEmail.mockResolvedValue(user)
 			jest.spyOn(require('argon2'), 'verify').mockResolvedValue(true)
 
-			const dto: LoginDto = {
-				email: 'newuser@gmail.com',
-				password: '123456'
-			}
-
 			const req = { session: { save: jest.fn(cb => cb(null)) } } as any
 
-			const result = await authService.login(req, dto)
-			expect(userService.findByEmail).toHaveBeenCalledWith(dto.email)
+			const result = await authService.login(req, loginDto)
+			expect(userService.findByEmail).toHaveBeenCalledWith(loginDto.email)
 			expect(result).toEqual(newUser)
 		})
 
 		it('should throw NotFoundException if user not found', async () => {
 			mockUserService.findByEmail.mockResolvedValue(null)
-			const dto: LoginDto = {
-				email: 'newuser@gmail.com',
-				password: '123456'
-			}
+
 			const req = { session: { save: jest.fn(cb => cb(null)) } } as any
 
-			await expect(authService.login(req, dto)).rejects.toThrow(
+			await expect(authService.login(req, loginDto)).rejects.toThrow(
 				'User Not Found'
 			)
 		})

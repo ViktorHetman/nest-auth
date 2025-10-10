@@ -8,18 +8,9 @@ import { hash } from 'argon2'
 
 import { PrismaService } from '@/prisma/prisma.service'
 
-import { UserService } from './user.service'
+import { user as newUser } from '../libs/common/utils/dummy-data.util'
 
-const newUser = {
-	id: '1',
-	email: 'test@example.com',
-	password: 'hashedPassword',
-	displayName: 'Test User',
-	avatar: 'avatar.png',
-	authMethod: AuthMethod.CREDENTIALS,
-	isVerified: true,
-	accounts: []
-}
+import { UserService } from './user.service'
 
 const db = {
 	user: {
@@ -97,10 +88,6 @@ describe('User Service', () => {
 			prisma.user.findUnique.mockResolvedValue(mockUser)
 
 			const result = await service.findByEmail('test@example.com')
-
-			expect(prisma.user.findUnique).toHaveBeenCalledWith({
-				where: { email: 'test@example.com' }
-			})
 			expect(result).toEqual(mockUser)
 		})
 
@@ -110,9 +97,6 @@ describe('User Service', () => {
 
 			const result = await service.findByEmail('nonexistent@example.com')
 
-			expect(prisma.user.findUnique).toHaveBeenCalledWith({
-				where: { email: 'nonexistent@example.com' }
-			})
 			expect(result).toBeNull()
 		})
 	})

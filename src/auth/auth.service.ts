@@ -7,23 +7,27 @@ import {
 	UnauthorizedException
 } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { User } from '@prisma/__generated__'
+import { AuthMethod, User } from '@prisma/__generated__'
 import { verify } from 'argon2'
 import { instanceToPlain, plainToInstance } from 'class-transformer'
 import type { Request, Response } from 'express'
 
+import { PrismaService } from '@/prisma/prisma.service'
 import { UserService } from '@/user/user.service'
 
 import { LoginDto } from './dto/login.dto'
 import { RegisterDto } from './dto/register.dto'
 import { ResponseDto } from './dto/response.dto'
+import { ProviderService } from './provider/provider.service'
 
 @Injectable()
 export class AuthService {
 	private readonly logger = new Logger(AuthService.name)
 	constructor(
+		private readonly prismaService: PrismaService,
 		private readonly userService: UserService,
-		private readonly configService: ConfigService
+		private readonly configService: ConfigService,
+		private readonly providerService: ProviderService
 	) {}
 
 	public async register(
@@ -96,6 +100,57 @@ export class AuthService {
 				resolve()
 			})
 		})
+	}
+
+	public async extractProfileFromCode(
+		req: Request,
+		provider: string,
+		code: string
+	) {
+		const providerInstance = this.providerService.findByService(provider)
+
+		const profile = await providerInstance?.findUserByCode(code)
+
+		const account = await this.prismaService.account.findFirst({
+			where: {
+				id: profile?.id,
+				provider: profile?.provider
+			}
+		})
+
+		let user = account?.userId
+			? await this.userService.findById(account.userId)
+			: null
+
+		if (user) {
+			return this.saveSession(req, user)
+		}
+
+		user = await this.userService.create(
+			profile?.email as string,
+			'',
+			profile?.name as string,
+			profile?.picture as string,
+			AuthMethod[
+				profile?.provider.toUpperCase() as keyof typeof AuthMethod
+			],
+			true
+		)
+
+		if (!account) {
+			await this.prismaService.account.create({
+				data: {
+					userId: user.id,
+					type: 'oauth',
+					provider: profile?.provider as string,
+					accessToken: profile?.access_token,
+					refreshToken: profile?.refresh_token,
+					expiresAt: Number(profile?.expires_at)
+				}
+			})
+		}
+
+		return this.saveSession(req, user)
 	}
 
 	private async saveSession(req: Request, user: User): Promise<unknown> {

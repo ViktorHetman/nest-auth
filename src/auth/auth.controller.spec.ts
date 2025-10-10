@@ -3,36 +3,21 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 import { BadRequestException } from '@nestjs/common'
+import { ConfigModule, ConfigService } from '@nestjs/config'
 import { Test, TestingModule } from '@nestjs/testing'
-import { AuthMethod, UserRole } from '@prisma/__generated__'
-import { v4 as uuid } from 'uuid'
+import { GoogleRecaptchaModule } from '@nestlab/google-recaptcha'
+
+import { getRecaptchaConfig } from '@/libs/config/recaptcha.config'
+import { UserService } from '@/user/user.service'
+
+import {
+	loginDto,
+	user as newUser,
+	registerDto
+} from '../libs/common/utils/dummy-data.util'
 
 import { AuthController } from './auth.controller'
 import { AuthService } from './auth.service'
-import { LoginDto } from './dto/login.dto'
-import { RegisterDto } from './dto/register.dto'
-import { ResponseDto } from './dto/response.dto'
-
-const dto: RegisterDto = {
-	email: 'newuser@gmail.com',
-	name: 'new user',
-	password: '123456',
-	passwordRepeat: '123456'
-}
-
-const newUser: Partial<ResponseDto> = {
-	id: uuid(),
-	isTwoFactorEnabled: false,
-	isVerified: false,
-	role: UserRole.REGULAR,
-	email: 'newuser@gmail.com',
-	displayName: 'new user',
-	avatar: '',
-	authMethod: AuthMethod.CREDENTIALS,
-	createdAt: new Date(),
-	updatedAt: new Date(),
-	accounts: []
-}
 
 describe('Auth Controller', () => {
 	let controller: AuthController
@@ -42,6 +27,13 @@ describe('Auth Controller', () => {
 		jest.clearAllMocks()
 
 		const module: TestingModule = await Test.createTestingModule({
+			imports: [
+				GoogleRecaptchaModule.forRootAsync({
+					imports: [ConfigModule],
+					useFactory: getRecaptchaConfig,
+					inject: [ConfigService]
+				})
+			],
 			controllers: [AuthController],
 			providers: [
 				{
@@ -51,6 +43,12 @@ describe('Auth Controller', () => {
 						login: jest.fn().mockResolvedValue(newUser),
 						logout: jest.fn().mockResolvedValue(undefined)
 					}
+				},
+				{
+					provide: UserService,
+					useValue: {
+						findById: jest.fn().mockResolvedValue(newUser)
+					}
 				}
 			]
 		}).compile()
@@ -59,20 +57,21 @@ describe('Auth Controller', () => {
 		service = module.get<AuthService>(AuthService)
 	})
 
+	afterAll(() => {
+		jest.clearAllMocks()
+	})
+
 	it('should be defined', () => {
 		expect(AuthController).toBeDefined()
-	})
-	it('should be defined', () => {
-		expect(controller).toBeDefined()
 	})
 
 	describe('register', () => {
 		it('should register new user', async () => {
 			const req = { session: { save: jest.fn(cb => cb(null)) } } as any
 
-			const result = await controller.register(req, dto)
+			const result = await controller.register(req, registerDto)
 			expect(result).toEqual(newUser)
-			expect(service.register).toHaveBeenCalledWith(req, dto)
+			expect(service.register).toHaveBeenCalledWith(req, registerDto)
 		})
 
 		it('should throw BadRequestException if invalid data was provided', async () => {
@@ -98,11 +97,6 @@ describe('Auth Controller', () => {
 				session: { save: jest.fn(cb => cb(null)) }
 			} as any
 
-			const loginDto: LoginDto = {
-				email: dto.email,
-				password: dto.password
-			}
-
 			const result = await controller.login(req, loginDto)
 
 			expect(result).toEqual(newUser)
@@ -116,10 +110,6 @@ describe('Auth Controller', () => {
 			const req = {
 				session: { save: jest.fn(cb => cb(null)) }
 			} as any
-			const loginDto: LoginDto = {
-				email: dto.email,
-				password: dto.password
-			}
 
 			await expect(controller.login(req, loginDto)).rejects.toThrow(
 				'Login fail'

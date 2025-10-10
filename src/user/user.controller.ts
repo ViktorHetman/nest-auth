@@ -4,6 +4,7 @@ import { UserRole } from '@prisma/__generated__'
 
 import { Authorization } from '@/auth/decorators/auth.decorator'
 import { Authorized } from '@/auth/decorators/authorized.decorator'
+import { user } from '@/libs/common/utils/dummy-data.util'
 
 import { UserService } from './user.service'
 
@@ -16,7 +17,8 @@ export class UserController {
 		description: 'Getting all user information, requires authorization'
 	})
 	@ApiOkResponse({
-		description: 'OK'
+		description: 'OK',
+		example: user
 	})
 	@Authorization()
 	@HttpCode(HttpStatus.OK)
@@ -31,7 +33,8 @@ export class UserController {
 			'Getting all user information by param id, requires authorization, and admin role'
 	})
 	@ApiOkResponse({
-		description: 'OK'
+		description: 'OK',
+		example: user
 	})
 	@Authorization(UserRole.ADMIN)
 	@HttpCode(HttpStatus.OK)

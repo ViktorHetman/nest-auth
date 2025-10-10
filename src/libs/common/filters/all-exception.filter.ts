@@ -38,9 +38,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
 			`${method} ${url} | IP: ${ip} | UA: ${userAgent} | STATUS: ${status} | MESSAGE: ${JSON.stringify(message)}`
 		)
 
-		// Отправляем ответ клиенту
 		res.status(status).json({
-			statusCode: status,
 			message
 		})
 	}
